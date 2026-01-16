@@ -1,7 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Book, LibraryBook } from '@/types';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Book, LibraryBook } from "@/types";
+import { db } from "@/services/firebase";
+import { useAuth } from "@/context/AuthContext";
 
 interface LibraryContextType {
   library: LibraryBook[];
@@ -13,24 +16,91 @@ interface LibraryContextType {
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
 export const LibraryProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [library, setLibrary] = useState<LibraryBook[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
-  // Charger depuis le localStorage au démarrage
-  useEffect(() => {
-    const savedLibrary = localStorage.getItem('my_book_library');
-    if (savedLibrary) {
-      try {
-        setLibrary(JSON.parse(savedLibrary));
-      } catch (e) {
-        console.error("Erreur de lecture de la bibliothèque locale", e);
-      }
+  const readLocalLibrary = (): LibraryBook[] => {
+    const savedLibrary = localStorage.getItem("my_book_library");
+    if (!savedLibrary) {
+      return [];
     }
-  }, []);
+    try {
+      return JSON.parse(savedLibrary) as LibraryBook[];
+    } catch (e) {
+      console.error("Erreur de lecture de la bibliothèque locale", e);
+      return [];
+    }
+  };
 
-  // Sauvegarder à chaque modification
+  const mergeLibraries = (primary: LibraryBook[], secondary: LibraryBook[]) => {
+    const map = new Map<string, LibraryBook>();
+    const addOrUpdate = (book: LibraryBook) => {
+      const existing = map.get(book.id);
+      if (!existing) {
+        map.set(book.id, book);
+        return;
+      }
+      const existingDate = Date.parse(existing.readDate ?? "");
+      const incomingDate = Date.parse(book.readDate ?? "");
+      if (Number.isNaN(existingDate) || incomingDate > existingDate) {
+        map.set(book.id, book);
+      }
+    };
+    primary.forEach(addOrUpdate);
+    secondary.forEach(addOrUpdate);
+    return Array.from(map.values());
+  };
+
   useEffect(() => {
-    localStorage.setItem('my_book_library', JSON.stringify(library));
-  }, [library]);
+    const loadLibrary = async () => {
+      setIsLoaded(false);
+      if (!user) {
+        setLibrary(readLocalLibrary());
+        setIsLoaded(true);
+        return;
+      }
+
+      try {
+        const docRef = doc(db, "libraries", user.uid);
+        const snapshot = await getDoc(docRef);
+        const remoteLibrary = snapshot.exists()
+          ? ((snapshot.data().library ?? []) as LibraryBook[])
+          : [];
+        const localLibrary = readLocalLibrary();
+        const mergedLibrary = mergeLibraries(remoteLibrary, localLibrary);
+        setLibrary(mergedLibrary);
+        if (mergedLibrary.length !== remoteLibrary.length) {
+          await setDoc(docRef, { library: mergedLibrary }, { merge: true });
+        }
+      } catch (e) {
+        console.error("Erreur de chargement de la bibliothèque distante", e);
+        setLibrary(readLocalLibrary());
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    if (user?.uid !== lastUserIdRef.current) {
+      lastUserIdRef.current = user?.uid ?? null;
+      void loadLibrary();
+    } else if (!user && lastUserIdRef.current === null) {
+      setLibrary(readLocalLibrary());
+      setIsLoaded(true);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    localStorage.setItem("my_book_library", JSON.stringify(library));
+    if (user) {
+      const docRef = doc(db, "libraries", user.uid);
+      void setDoc(docRef, { library }, { merge: true });
+    }
+  }, [library, user, isLoaded]);
 
   const addToLibrary = (book: Book, rating: number) => {
     setLibrary((prev) => {
@@ -73,4 +143,6 @@ export const useLibrary = () => {
   }
   return context;
 };
+
+export default LibraryProvider;
 

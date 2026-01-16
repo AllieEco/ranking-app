@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
-import { LibraryProvider } from "@/context/LibraryContext";
+import { AuthProvider } from "@/context/AuthContext";
+import LibraryProvider from "@/context/LibraryContext";
 import Navbar from "@/components/Navbar";
 
 const playfair = Playfair_Display({ 
@@ -27,12 +28,14 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${playfair.variable} ${inter.variable} font-sans animated-grid-bg min-h-screen text-slate-900`}>
-        <LibraryProvider>
-          <Navbar />
-          <main className="container mx-auto p-4 md:p-8">
-            {children}
-          </main>
-        </LibraryProvider>
+        <AuthProvider>
+          <LibraryProvider>
+            <Navbar />
+            <main className="container mx-auto p-4 md:p-8">
+              {children}
+            </main>
+          </LibraryProvider>
+        </AuthProvider>
       </body>
     </html>
   );
