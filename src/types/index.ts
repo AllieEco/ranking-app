@@ -11,10 +11,20 @@ export interface Book {
   publisher?: string;
 }
 
+export type ReadingSheetType = 'essai' | 'roman_histoire';
+
+export interface ReadingSheet {
+  type: ReadingSheetType;
+  responses: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface LibraryBook extends Book {
   userRating?: number;
   readDate: string;
   status: 'read' | 'reading' | 'want_to_read';
+  readingSheet?: ReadingSheet;
 }
 
 export interface Cabinet {

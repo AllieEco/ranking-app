@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Book, Cabinet, LibraryBook } from "@/types";
+import { Book, Cabinet, LibraryBook, ReadingSheet } from "@/types";
 import { db } from "@/services/firebase";
 import { useAuth } from "@/context/AuthContext";
 
@@ -10,6 +10,7 @@ interface LibraryContextType {
   library: LibraryBook[];
   cabinets: Cabinet[];
   addToLibrary: (book: Book, rating: number) => void;
+  saveReadingSheet: (bookId: string, sheet: ReadingSheet) => void;
   removeFromLibrary: (bookId: string) => void;
   isBookInLibrary: (bookId: string) => boolean;
   createCabinet: (name: string) => void;
@@ -169,6 +170,26 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const saveReadingSheet = (bookId: string, sheet: ReadingSheet) => {
+    setLibrary((prev) =>
+      prev.map((book) => {
+        if (book.id !== bookId) {
+          return book;
+        }
+        const now = new Date().toISOString();
+        const existingCreatedAt = book.readingSheet?.createdAt ?? sheet.createdAt;
+        return {
+          ...book,
+          readingSheet: {
+            ...sheet,
+            createdAt: existingCreatedAt,
+            updatedAt: now,
+          },
+        };
+      })
+    );
+  };
+
   const removeFromLibrary = (bookId: string) => {
     setLibrary((prev) => prev.filter((b) => b.id !== bookId));
     setCabinets((prev) =>
@@ -223,6 +244,7 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         library,
         cabinets,
         addToLibrary,
+        saveReadingSheet,
         removeFromLibrary,
         isBookInLibrary,
         createCabinet,

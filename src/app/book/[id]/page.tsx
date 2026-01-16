@@ -1,5 +1,6 @@
 import { getBookById } from '@/services/googleBooks';
 import BookActions from '@/components/BookActions';
+import BookDetailTabs from '@/components/BookDetailTabs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -20,10 +21,6 @@ export default async function BookDetailPage({ params }: { params: { id: string 
   if (!book) {
     notFound();
   }
-
-  const createMarkup = (html: string) => {
-    return { __html: html };
-  };
 
   return (
     <div className="max-w-5xl mx-auto py-8">
@@ -83,13 +80,7 @@ export default async function BookDetailPage({ params }: { params: { id: string 
               )}
             </div>
 
-            <div className="prose prose-slate max-w-none mb-12">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Résumé</h3>
-              <div 
-                className="text-slate-600 leading-relaxed"
-                dangerouslySetInnerHTML={createMarkup(book.description || "Aucune description disponible pour ce livre.")}
-              />
-            </div>
+            <BookDetailTabs bookId={book.id} description={book.description} />
 
             <div className="pt-8 border-t border-slate-100 grid grid-cols-2 gap-8 text-sm">
               <div>
