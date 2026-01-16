@@ -6,12 +6,13 @@ import BookCard from '@/components/BookCard';
 import Link from 'next/link';
 
 export default function LibraryPage() {
-  const { library, cabinets, createCabinet, moveBookToCabinet } = useLibrary();
+  const { library, cabinets, createCabinet, moveBookToCabinet, removeCabinet } = useLibrary();
   const [showCreate, setShowCreate] = useState(false);
   const [newCabinetName, setNewCabinetName] = useState('');
   const [dragOverCabinetId, setDragOverCabinetId] = useState<string | null>(null);
   const [dragOverUnassigned, setDragOverUnassigned] = useState(false);
   const [animalEmoji, setAnimalEmoji] = useState('🐶');
+  const [returningBookIds, setReturningBookIds] = useState<Set<string>>(new Set());
 
   // Calculs simples pour le profil
   const totalBooks = library.length;
@@ -67,6 +68,20 @@ export default function LibraryPage() {
     moveBookToCabinet(bookId, cabinetId);
     setDragOverCabinetId(null);
     setDragOverUnassigned(false);
+  };
+
+  const markReturningBooks = (bookIds: string[]) => {
+    if (bookIds.length === 0) {
+      return;
+    }
+    setReturningBookIds((prev) => new Set([...prev, ...bookIds]));
+    window.setTimeout(() => {
+      setReturningBookIds((prev) => {
+        const next = new Set(prev);
+        bookIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    }, 700);
   };
 
   const animalEmojis = [
@@ -211,7 +226,23 @@ export default function LibraryPage() {
                       <h3 className="font-heading font-bold text-lg text-slate-900">{cabinet.name}</h3>
                       <p className="text-xs text-slate-500">{cabinet.books.length} livre(s)</p>
                     </div>
-                    <div className="text-xs text-slate-400">Déposez ici</div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-400">Déposez ici</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Supprimer l'armoire "${cabinet.name}" ?`)) {
+                            removeCabinet(cabinet.id);
+                            markReturningBooks(cabinet.bookIds);
+                          }
+                        }}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                        aria-label="Supprimer l'armoire"
+                        title="Supprimer l'armoire"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                   {cabinet.books.length === 0 ? (
                     <div className="text-sm text-slate-400 border border-dashed border-slate-200 rounded-lg p-4 text-center">
@@ -266,7 +297,9 @@ export default function LibraryPage() {
                   key={book.id}
                   draggable
                   onDragStart={handleDragStart(book.id)}
-                  className="cursor-grab active:cursor-grabbing"
+                  className={`cursor-grab active:cursor-grabbing ${
+                    returningBookIds.has(book.id) ? 'cabinet-return' : ''
+                  }`}
                 >
                   <BookCard book={book} />
                 </div>

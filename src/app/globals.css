@@ -42,6 +42,25 @@ body {
   @apply border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200;
 }
 
+@keyframes cabinetReturn {
+  0% {
+    transform: translateY(-8px) scale(0.98);
+    opacity: 0.6;
+  }
+  60% {
+    transform: translateY(2px) scale(1.01);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.cabinet-return {
+  animation: cabinetReturn 650ms ease-out;
+}
+
 /* Animation de fond grille */
 @keyframes scrollGrid {
   0% {

@@ -14,6 +14,7 @@ interface LibraryContextType {
   removeFromLibrary: (bookId: string) => void;
   isBookInLibrary: (bookId: string) => boolean;
   createCabinet: (name: string) => void;
+  removeCabinet: (cabinetId: string) => void;
   moveBookToCabinet: (bookId: string, cabinetId: string | null) => void;
 }
 
@@ -222,6 +223,10 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
     setCabinets((prev) => [...prev, newCabinet]);
   };
 
+  const removeCabinet = (cabinetId: string) => {
+    setCabinets((prev) => prev.filter((cabinet) => cabinet.id !== cabinetId));
+  };
+
   const moveBookToCabinet = (bookId: string, cabinetId: string | null) => {
     setCabinets((prev) =>
       prev.map((cabinet) => {
@@ -248,6 +253,7 @@ export const LibraryProvider = ({ children }: { children: ReactNode }) => {
         removeFromLibrary,
         isBookInLibrary,
         createCabinet,
+        removeCabinet,
         moveBookToCabinet,
       }}
     >
