@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useLibrary } from '@/context/LibraryContext';
 import { ReadingSheet, ReadingSheetType } from '@/types';
-import { ESSAI_FIELDS, ROMAN_FIELDS } from '@/constants/readingSheets';
+import { ESSAI_FIELDS, LIBRE_FIELDS, ROMAN_FIELDS } from '@/constants/readingSheets';
 
 interface BookDetailTabsProps {
   bookId: string;
@@ -12,8 +12,25 @@ interface BookDetailTabsProps {
 
 type TabKey = 'resume' | 'fiche';
 
-const getFieldsForType = (type: ReadingSheetType) =>
-  type === 'essai' ? ESSAI_FIELDS : ROMAN_FIELDS;
+const getFieldsForType = (type: ReadingSheetType) => {
+  if (type === 'essai') {
+    return ESSAI_FIELDS;
+  }
+  if (type === 'roman_histoire') {
+    return ROMAN_FIELDS;
+  }
+  return LIBRE_FIELDS;
+};
+
+const getSheetLabel = (type: ReadingSheetType) => {
+  if (type === 'essai') {
+    return 'Essai';
+  }
+  if (type === 'roman_histoire') {
+    return 'Roman / Histoire';
+  }
+  return 'Fiche libre';
+};
 
 const renderDescription = (description?: string) => {
   const html = description || 'Aucune description disponible pour ce livre.';
@@ -107,7 +124,9 @@ export default function BookDetailTabs({ bookId, description }: BookDetailTabsPr
         </div>
       ) : readingSheet && fields ? (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-900">Fiche de lecture</h3>
+          <h3 className="text-lg font-bold text-slate-900">
+            Fiche de lecture — {getSheetLabel(readingSheet.type)}
+          </h3>
           {fields.map((field) => {
             const rawValue = responses[field.id];
             const isRating = field.type === 'rating';
@@ -146,6 +165,13 @@ export default function BookDetailTabs({ bookId, description }: BookDetailTabsPr
                 className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:text-slate-900"
               >
                 Roman / Histoire
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStartSheet('libre')}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:text-slate-900"
+              >
+                Je fais ma propre fiche
               </button>
             </div>
           ) : (
@@ -191,7 +217,8 @@ export default function BookDetailTabs({ bookId, description }: BookDetailTabsPr
                           [field.id]: event.target.value,
                         }))
                       }
-                      rows={3}
+                      rows={sheetType === 'libre' ? 10 : 3}
+                      placeholder={field.placeholder}
                       className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     />
                   )}

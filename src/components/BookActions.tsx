@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Book, ReadingSheet, ReadingSheetType } from '@/types';
 import { useLibrary } from '@/context/LibraryContext';
 import { useAuth } from '@/context/AuthContext';
-import { ESSAI_FIELDS, ROMAN_FIELDS, SheetFieldType, SheetField } from '@/constants/readingSheets';
+import { ESSAI_FIELDS, LIBRE_FIELDS, ROMAN_FIELDS, SheetFieldType, SheetField } from '@/constants/readingSheets';
 
 
 
@@ -31,8 +31,25 @@ export default function BookActions({ book }: { book: Book }) {
     setShowSheetPrompt(true);
   };
 
-  const getFieldsForType = (type: ReadingSheetType) =>
-    type === 'essai' ? ESSAI_FIELDS : ROMAN_FIELDS;
+  const getFieldsForType = (type: ReadingSheetType) => {
+    if (type === 'essai') {
+      return ESSAI_FIELDS;
+    }
+    if (type === 'roman_histoire') {
+      return ROMAN_FIELDS;
+    }
+    return LIBRE_FIELDS;
+  };
+
+  const getSheetLabel = (type: ReadingSheetType) => {
+    if (type === 'essai') {
+      return 'Essai';
+    }
+    if (type === 'roman_histoire') {
+      return 'Roman / Histoire';
+    }
+    return 'Fiche libre';
+  };
 
   const startSheet = (type: ReadingSheetType) => {
     const fields = getFieldsForType(type);
@@ -166,6 +183,12 @@ export default function BookActions({ book }: { book: Book }) {
               >
                 Roman / Histoire
               </button>
+              <button
+                onClick={() => startSheet('libre')}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:text-slate-900"
+              >
+                Je fais ma propre fiche
+              </button>
             </div>
             <button
               onClick={handleCloseSheet}
@@ -182,7 +205,7 @@ export default function BookActions({ book }: { book: Book }) {
           <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl max-h-full overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900">
-                Fiche de lecture — {sheetType === 'essai' ? 'Essai' : 'Roman / Histoire'}
+                Fiche de lecture — {getSheetLabel(sheetType)}
               </h3>
               <button
                 onClick={handleCloseSheet}
@@ -233,7 +256,7 @@ export default function BookActions({ book }: { book: Book }) {
                           [field.id]: event.target.value,
                         }))
                       }
-                      rows={3}
+                      rows={sheetType === 'libre' ? 10 : 3}
                       placeholder={field.placeholder}
                       className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     />

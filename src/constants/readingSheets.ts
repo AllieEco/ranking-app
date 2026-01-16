@@ -109,3 +109,11 @@ export const ROMAN_FIELDS: SheetField[] = [
     helper: 'Pourquoi / quand.',
   },
 ];
+
+export const LIBRE_FIELDS: SheetField[] = [
+  {
+    id: 'fiche_libre',
+    label: 'Ma fiche libre',
+    placeholder: 'Écris ta fiche libre ici.',
+  },
+];

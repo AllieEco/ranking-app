@@ -11,7 +11,7 @@ export interface Book {
   publisher?: string;
 }
 
-export type ReadingSheetType = 'essai' | 'roman_histoire';
+export type ReadingSheetType = 'essai' | 'roman_histoire' | 'libre';
 
 export interface ReadingSheet {
   type: ReadingSheetType;
