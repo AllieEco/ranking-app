@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${playfair.variable} ${inter.variable} font-sans bg-slate-50 min-h-screen text-slate-900`}>
+      <body className={`${playfair.variable} ${inter.variable} font-sans animated-grid-bg min-h-screen text-slate-900`}>
         <LibraryProvider>
           <Navbar />
           <main className="container mx-auto p-4 md:p-8">
