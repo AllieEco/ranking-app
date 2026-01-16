@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Book } from '@/types';
 import { useLibrary } from '@/context/LibraryContext';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 export default function BookCard({ book }: { book: Book }) {
   const { addToLibrary, isBookInLibrary, library } = useLibrary();
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const [showRating, setShowRating] = useState(false);
   
   const existingBook = library.find(b => b.id === book.id);
@@ -93,7 +98,14 @@ export default function BookCard({ book }: { book: Book }) {
             </div>
           ) : (
             <button
-              onClick={() => setShowRating(true)}
+              onClick={() => {
+                if (!user) {
+                  const redirectPath = encodeURIComponent(pathname);
+                  router.push(`/login?redirect=${redirectPath}`);
+                  return;
+                }
+                setShowRating(true);
+              }}
               className="w-full clean-btn-outline text-sm flex items-center justify-center gap-2"
             >
               <span>+</span> Ajouter

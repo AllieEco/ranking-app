@@ -16,9 +16,11 @@ export default function Navbar() {
           <Link href="/" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
             Rechercher
           </Link>
-          <Link href="/library" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-            Ma Bibliothèque
-          </Link>
+          {user && (
+            <Link href="/library" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+              Ma Bibliothèque
+            </Link>
+          )}
           {user ? (
             <button
               type="button"

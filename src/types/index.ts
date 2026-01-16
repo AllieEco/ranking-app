@@ -16,3 +16,10 @@ export interface LibraryBook extends Book {
   readDate: string;
   status: 'read' | 'reading' | 'want_to_read';
 }
+
+export interface Cabinet {
+  id: string;
+  name: string;
+  bookIds: string[];
+  createdAt: string;
+}

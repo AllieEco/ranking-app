@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Book } from '@/types';
 import { useLibrary } from '@/context/LibraryContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function BookActions({ book }: { book: Book }) {
   const { addToLibrary, library } = useLibrary();
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const [showRating, setShowRating] = useState(false);
   
   const existingBook = library.find(b => b.id === book.id);
@@ -58,7 +63,14 @@ export default function BookActions({ book }: { book: Book }) {
 
   return (
     <button
-      onClick={() => setShowRating(true)}
+      onClick={() => {
+        if (!user) {
+          const redirectPath = encodeURIComponent(pathname);
+          router.push(`/login?redirect=${redirectPath}`);
+          return;
+        }
+        setShowRating(true);
+      }}
       className="clean-btn w-full py-3 text-lg"
     >
       J'ai lu ce livre

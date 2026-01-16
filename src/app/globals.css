@@ -38,6 +38,10 @@ body {
   @apply border border-slate-300 text-slate-700 rounded-md px-4 py-2 font-medium hover:bg-slate-50 transition-colors;
 }
 
+.clean-input {
+  @apply border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200;
+}
+
 /* Animation de fond grille */
 @keyframes scrollGrid {
   0% {
