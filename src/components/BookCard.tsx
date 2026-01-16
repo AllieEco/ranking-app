@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 
 export default function BookCard({ book }: { book: Book }) {
-  const { addToLibrary, isBookInLibrary, library } = useLibrary();
+  const { addToLibrary, isBookInLibrary, library, removeFromLibrary } = useLibrary();
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -23,7 +23,24 @@ export default function BookCard({ book }: { book: Book }) {
   };
 
   return (
-    <div className="clean-card flex flex-col h-full overflow-hidden group">
+    <div className="clean-card relative flex flex-col h-full overflow-hidden group">
+      {isInLib && pathname.startsWith('/library') && (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (window.confirm(`Supprimer "${book.title}" de votre bibliothèque ?`)) {
+              removeFromLibrary(book.id);
+            }
+          }}
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+          aria-label="Supprimer le livre"
+          title="Supprimer le livre"
+        >
+          ✕
+        </button>
+      )}
       <Link href={`/book/${book.id}`} className="flex gap-4 p-4 cursor-pointer">
         {/* Cover Image */}
         <div className="flex-shrink-0 w-24 h-36 bg-slate-100 rounded shadow-sm overflow-hidden relative">

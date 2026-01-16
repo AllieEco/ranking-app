@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLibrary } from '@/context/LibraryContext';
 import BookCard from '@/components/BookCard';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ export default function LibraryPage() {
   const [newCabinetName, setNewCabinetName] = useState('');
   const [dragOverCabinetId, setDragOverCabinetId] = useState<string | null>(null);
   const [dragOverUnassigned, setDragOverUnassigned] = useState(false);
+  const [animalEmoji, setAnimalEmoji] = useState('🐶');
 
   // Calculs simples pour le profil
   const totalBooks = library.length;
@@ -68,12 +69,61 @@ export default function LibraryPage() {
     setDragOverUnassigned(false);
   };
 
+  const animalEmojis = [
+    '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯',
+    '🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆',
+    '🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋',
+    '🐢','🐍','🦎','🐙','🦑','🦐','🦞','🦀','🐠','🐟',
+    '🐬','🐳','🦈','🦭','🦦','🦥','🐘','🦒','🦓','🦛',
+  ];
+
+  const getRandomAnimal = (exclude?: string) => {
+    if (animalEmojis.length === 0) {
+      return '🐶';
+    }
+    if (animalEmojis.length === 1) {
+      return animalEmojis[0];
+    }
+    let next = animalEmojis[Math.floor(Math.random() * animalEmojis.length)];
+    while (next === exclude) {
+      next = animalEmojis[Math.floor(Math.random() * animalEmojis.length)];
+    }
+    return next;
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const saved = window.localStorage.getItem('profileAnimalEmoji');
+    if (saved) {
+      setAnimalEmoji(saved);
+      return;
+    }
+    const initial = getRandomAnimal();
+    setAnimalEmoji(initial);
+    window.localStorage.setItem('profileAnimalEmoji', initial);
+  }, []);
+
+  const handleChangeAnimal = () => {
+    const next = getRandomAnimal(animalEmoji);
+    setAnimalEmoji(next);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('profileAnimalEmoji', next);
+    }
+  };
+
   return (
     <div className="space-y-12">
       {/* Profil Header */}
       <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-8">
-        <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center text-4xl">
-          👤
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center text-4xl overflow-hidden">
+            <span aria-hidden="true">{animalEmoji}</span>
+          </div>
+          <button type="button" onClick={handleChangeAnimal} className="clean-btn-outline text-xs">
+            Changer d'animal
+          </button>
         </div>
         <div className="text-center md:text-left flex-1">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">Mon Profil</h1>
@@ -225,6 +275,7 @@ export default function LibraryPage() {
           )}
         </div>
       </div>
+
     </div>
   );
 }
